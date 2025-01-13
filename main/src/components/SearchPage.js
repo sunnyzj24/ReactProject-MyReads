@@ -10,35 +10,51 @@ const SearchPage = ({ bookShelf, onUpdateStatus }) => {
   let [searchedBookList, setSearchedBookList] = useState([]);
   const [bookList, setBookList] = useState([]);
 
+  let queryTimeout;
+
   useEffect(() => {
     setBookList(bookShelf);
   }, [bookShelf]);
 
+  useEffect(() => {
+    setSearchedBookList(searchedBookList);
+  }, [searchedBookList]);
+
   const onSearch = async (e) => {
     e.preventDefault();
+    clearTimeout(queryTimeout);
+
     let query = e.target.value;
     setQuery(query);
-    BooksAPI.search(query).then((res) => {
-      if (!res) {
-        console.log("Bad response from server");
-      } else if (
-        res.hasOwnProperty("error") &&
-        res.error.toLowerCase().includes("empty query")
-      ) {
-        setSearchedBookList([]);
-      } else if (res.length > 0) {
-        res = res.map((book) => {
-          let toBeUpdatedBook = bookList.find((i) => i.id === book.id);
-          if (toBeUpdatedBook) {
-            book.shelf = toBeUpdatedBook.shelf;
-          } else {
-            book.shelf = "none";
-          }
-          return book;
-        });
-        setSearchedBookList(res);
-      }
-    });
+
+    if (!query) {
+      return setSearchedBookList([]);
+    }
+
+    queryTimeout = setTimeout(() => {
+      BooksAPI.search(query).then((res) => {
+        if (!res) {
+          console.log("Bad response from server");
+          setSearchedBookList([]);
+        } else if (
+          res.hasOwnProperty("error") &&
+          res.error.toLowerCase().includes("empty query")
+        ) {
+          setSearchedBookList([]);
+        } else if (res.length > 0) {
+          res = res.map((book) => {
+            let toBeUpdatedBook = bookList.find((i) => i.id === book.id);
+            if (toBeUpdatedBook) {
+              book.shelf = toBeUpdatedBook.shelf;
+            } else {
+              book.shelf = "none";
+            }
+            return book;
+          });
+          setSearchedBookList(res);
+        }
+      });
+    }, 500);
   };
 
   return (
@@ -72,6 +88,9 @@ const SearchPage = ({ bookShelf, onUpdateStatus }) => {
               );
             })}
         </ol>
+        <div className="search-result-text">
+          <span>{searchedBookList.length} books found</span>
+        </div>
       </div>
     </div>
   );

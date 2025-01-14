@@ -4,7 +4,7 @@ const Book = ({ book, onUpdateBookStatus }) => {
   const bookImage =
     book.imageLinks && book.imageLinks.thumbnail
       ? book.imageLinks.thumbnail
-      : noCover;
+      : '';
   return (
     <div className="book">
       <div className="book-top">
@@ -13,7 +13,7 @@ const Book = ({ book, onUpdateBookStatus }) => {
           style={{
             width: 128,
             height: 193,
-            backgroundImage: `url($(bookImage))`,
+            backgroundImage: `url(${bookImage})`,
           }}
         ></div>
         <div className="book-shelf-changer">
